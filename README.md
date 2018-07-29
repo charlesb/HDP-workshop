@@ -13,7 +13,7 @@ Password: admin
 
 Once logged in, start all services
 
-![Image of Amabari Start Services](images/ambari_satrt_services.png)
+![Image of Amabari Start Services](images/ambari_start_services.png)
 
 
 If you have cloned the porject you can simply run the command below from your terminal 
