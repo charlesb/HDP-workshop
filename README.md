@@ -28,7 +28,7 @@ It can take up to 6 minutes...
 
 Download [GeoIPCountryCSV.zip](https://github.com/charlesb/HDP-workshop/raw/master/samples/GeoIPCountryCSV.zip) and [WebLogs.zip](https://github.com/charlesb/HDP-workshop/raw/master/samples/WebLogs.zip) from the samples folder
 
-Follow this [link](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation) for a description
+Follow this [link](https://dev.maxmind.com/geoip/legacy/csv/#GeoIP_Legacy_Country_CSV_Database_Fields) for a description of the GeoIP database.
 
 Different formats can also be [downloaded](http://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip)
 
@@ -101,19 +101,17 @@ SELECT * FROM raw_logs LIMIT 10;
 
 You should notice that web logs need to be parsed following a [specific pattern](https://httpd.apache.org/docs/1.3/logs.html#combined)
 
+Here is the regex expression to extract each field:
+
+```(\S+) (\S+) (\S+) \[([^\]]+)\] "([A-Z]+) ([^ "]+)? HTTP\/[0-9.]+" ([0-9]{3}) ([0-9]+|-) "([^"]*)" "([^"]*)" "(\S+)"```
+
+## Analyze the datasets using SQL
+
 In order to increase the read performance we are going to extract the valuable information and insert the results in an optimized table
 
-SELECT
-  regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1) ip,
-  cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",1) as bigint) * 16777216 +
-  cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",2) as bigint) * 65536 +
-  cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",3) as bigint) * 256 +
-  cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int,
-  regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 4) time,
-  regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 5) request
-FROM raw_logs
-limit 1;
+First we create a target table
 
+```sql
 CREATE TABLE web_logs (
 ip VARCHAR(15),
 ip_to_int INT,
@@ -122,7 +120,14 @@ request STRING
 )
 STORED AS ORC
 TBLPROPERTIES ("orc.compress"="SNAPPY");
+```
+We have added a new column ```ip_to_int``` to calculate the [integer representation of an IP](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation). It will be useful later to find out the origin of the connections.
 
+Nowadays it's more commom to use [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for the ip range representation.
+
+Then extracted raw data and insert and map it to the previous schema.
+
+```sql
 INSERT OVERWRITE TABLE web_logs
 SELECT
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1) ip,
@@ -133,13 +138,13 @@ SELECT
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 4) time,
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 5) request
 FROM raw_logs
+```
 
+**Exercise:** How many logs do we have in the table?
 
-SELECT count(*) FROM web_logs;
+**Exercise:** Retrieve the origin of the 10 first connections
 
-https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation
-
-
+```sql
 select ip, country_name
 from (
 select
@@ -153,14 +158,18 @@ LIMIT 10
 ) accesses
 JOIN geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
+```
 
+A more efficient way to have the answer
+
+```sql
 SELECT ip, country_name
 FROM (
 SELECT * FROM web_logs LIMIT 10
 ) accesses
 LEFT JOIN geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
-
+```
 
 
 
