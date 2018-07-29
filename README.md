@@ -18,7 +18,9 @@ Password: admin
 
 ![Image of Amabari Login Page](images/ambari_login_page.png)
 
-Once logged in, start all services
+Once logged in, start all services.
+
+It can take up to 6 minutes...
 
 ![Image of Amabari Start Services](images/ambari_start_services.png)
 
@@ -30,11 +32,11 @@ Follow this [link](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Repres
 
 Different formats can also be [downloaded](http://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip)
 
+Unzip the 2 files and go to Ambari's **Files View**
 
 
-Then go to Files View
 
-Create a new folder workshop under /user/admin/
+Then browse to /user/admin and create a new folder workshop
 
 Unzip GeoIPCountryCSV.zip and upload file
 
