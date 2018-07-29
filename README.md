@@ -24,7 +24,7 @@ Once logged in, start all services
 
 ## Load the sample datasets to HDFS
 
-Download GeoIPCountryCSV.zip and WebLogs.zip from the samples folder
+Download [GeoIPCountryCSV.zip](https://github.com/charlesb/HDP-workshop/raw/master/samples/GeoIPCountryCSV.zip) and [WebLogs.zip](https://github.com/charlesb/HDP-workshop/raw/master/samples/WebLogs.zip) from the samples folder
 
 Follow this [link](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation) for a description
 
