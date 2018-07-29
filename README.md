@@ -2,7 +2,21 @@
 
 ## Accessing the sandbox
 
+Open a web browser and go to the following url
 
+```http://<provided_url>:8080/```
+
+Username: admin
+Password: admin
+
+![Image of Amabari Login Page](images/ambari_login_page.png)
+
+Once logged in, start all services
+
+![Image of Amabari Start Services](images/ambari_satrt_services.png)
+
+
+If you have cloned the porject you can simply run the command below from your terminal 
 
 Download GeoLite Country in CSV / zip format from https://dev.maxmind.com/geoip/legacy/geolite/
 
