@@ -1,5 +1,12 @@
 # HDP Labs
 
+Content
+
+* [Lab 1 - Accessing the sandbox](#accessing-the-sandbox)
+* [Lab 2 - Load the sample datasets to HDFS](#load-the-sample-datasets-to-hdfs)
+* Create Hive tables
+* Analyze the datasets
+
 ## Accessing the sandbox
 
 Open a web browser and go to the following url
@@ -15,17 +22,15 @@ Once logged in, start all services
 
 ![Image of Amabari Start Services](images/ambari_start_services.png)
 
+## Load the sample datasets to HDFS
 
-If you have cloned the porject you can simply run the command below from your terminal 
+Download GeoIPCountryCSV.zip and WebLogs.zip from the samples folder
 
-Download GeoLite Country in CSV / zip format from https://dev.maxmind.com/geoip/legacy/geolite/
+Follow this [link](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation) for a description
 
-http://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip
+Different formats can also be [downloaded](http://geolite.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip)
 
-Log into Ambari (http://<ip_address>:8080)
 
-Usermane: admin
-Password: admin
 
 Then go to Files View
 
