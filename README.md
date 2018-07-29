@@ -1,6 +1,8 @@
-# DSTA Workshop - Hive
+# HDP Labs
 
-## Prepare the data
+## Accessing the sandbox
+
+
 
 Download GeoLite Country in CSV / zip format from https://dev.maxmind.com/geoip/legacy/geolite/
 
@@ -41,7 +43,7 @@ SELECT * FROM geo_ip_country_whois;
 
 https://gist.github.com/rm-hull/bd60aed44024e9986e3c
 
-Unzip WebLogs.zip and upload access.log into previous folder
+Unzip WbLogs.zip and upload access.log into previous folder
 
 Go to Hive View 2.0
 
@@ -112,7 +114,7 @@ SELECT ip, country_name
 FROM (
 SELECT * FROM web_logs LIMIT 10
 ) accesses
-JOIN geo_ip_country_whois
+LEFT JOIN geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 
 
