@@ -4,8 +4,8 @@ Content
 
 * [Lab 1 - Accessing the sandbox](#accessing-the-sandbox)
 * [Lab 2 - Load the sample datasets to HDFS](#load-the-sample-datasets-to-hdfs)
-* Create Hive tables
-* Analyze the datasets
+* [Lab 3 - Create Hive tables](#create-hive-tables)
+* [Lab 4 - Analyze the datasets using SQL](#analyze-the-datasets-using-sql)
 
 ## Accessing the sandbox
 
@@ -34,16 +34,25 @@ Different formats can also be [downloaded](http://geolite.maxmind.com/download/g
 
 Unzip the 2 files and go to Ambari's **Files View**
 
+![Image of Amabari files view](images/ambari_files_view_1.png)
 
+Then browse to /user/admin and create a new folder workshop.
 
-Then browse to /user/admin and create a new folder workshop
+Unzip GeoIPCountryCSV.zip and WebLogs.zip and upload the content to the new folder.
 
-Unzip GeoIPCountryCSV.zip and upload file
+![Image of Amabari files view 2](images/ambari_files_view_2.png)
 
-Create a table in Hive
+**Exercise:** Explore the content on both files on HDFS
 
-Go to Hive View 2.0
+## Create Hive tables
 
+Go to Ambaris's **Hive View 2.0**
+
+![Image of Amabari hive view](images/ambari_hive_view.png)
+
+And create the table below
+
+```sql
 CREATE TABLE geo_ip_country_whois (
 start_ip_address STRING,
 end_ip_address STRING,
@@ -57,28 +66,42 @@ WITH SERDEPROPERTIES (
    "separatorChar" = ",",
    "quoteChar"     = "\""
 );
+```
+Then import the data from HDFS into Hive
 
+```sql
 LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE geo_ip_country_whois;
+```
 
+**Exercise:** Explore the table
+
+```sql
 SELECT * FROM geo_ip_country_whois;
+```
 
-https://gist.github.com/rm-hull/bd60aed44024e9986e3c
+Create a table to access the semi-structure logs format
 
-Unzip WbLogs.zip and upload access.log into previous folder
-
-Go to Hive View 2.0
-
+```sql
 CREATE TABLE raw_logs (
 log STRING
 );
+```
 
+Then laod the data
+
+```sql
 LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE raw_logs;
+```
 
+**Exercise:** Explore the table
+
+```sql
 SELECT * FROM raw_logs LIMIT 10;
+```
 
-https://httpd.apache.org/docs/1.3/logs.html#combined
+You should notice that web logs need to be parsed following a [specific pattern](https://httpd.apache.org/docs/1.3/logs.html#combined)
 
-(\S+) (\S+) (\S+) \[([^\]]+)\] "([A-Z]+) ([^ "]+)? HTTP\/[0-9.]+" ([0-9]{3}) ([0-9]+|-) "([^"]*)" "([^"]*)" "(\S+)"
+In order to increase the read performance we are going to extract the valuable information and insert the results in an optimized table
 
 SELECT
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1) ip,
