@@ -79,7 +79,7 @@ LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TAB
 SELECT * FROM geo_ip_country_whois;
 ```
 
-Create a table to access the semi-structure logs format
+Create a table to access the semi-structured logs format
 
 ```sql
 CREATE TABLE raw_logs (
@@ -99,11 +99,17 @@ LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE raw_logs
 SELECT * FROM raw_logs LIMIT 10;
 ```
 
-You should notice that web logs need to be parsed following a [specific pattern](https://httpd.apache.org/docs/1.3/logs.html#combined)
+Here is an example of Apache web server log:
 
-Here is the regex expression to extract each field:
+```109.169.248.247 - - [12/Dec/2015:18:25:11 +0100] "GET /administrator/ HTTP/1.1" 200 4263 "-" "Mozilla/5.0 (Windows NT 6.0; rv:34.0) Gecko/20100101 Firefox/34.0" "-"```
+
+Notice that web logs need to be parsed following a [specific pattern](https://httpd.apache.org/docs/1.3/logs.html#combined)
+
+Here is an example of a regular expression to extract each field:
 
 ```(\S+) (\S+) (\S+) \[([^\]]+)\] "([A-Z]+) ([^ "]+)? HTTP\/[0-9.]+" ([0-9]{3}) ([0-9]+|-) "([^"]*)" "([^"]*)" "(\S+)"```
+
+Click [here](https://regexr.com/3t58q) for regex description.
 
 ## Analyze the datasets using SQL
 
@@ -145,9 +151,9 @@ FROM raw_logs
 **Exercise:** Retrieve the origin of the 10 first connections
 
 ```sql
-select ip, country_name
-from (
-select
+SELECT ip, country_name
+FROM (
+SELECT
 regexp_extract(log, '^(?:([^ ]*),?){1}', 1) ip,
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",1) as bigint) * 16777216 +
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",2) as bigint) * 65536 +
