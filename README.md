@@ -50,6 +50,12 @@ Go to Ambaris's **Hive View 2.0**
 
 ![Image of Amabari hive view](images/ambari_hive_view.png)
 
+First create a new database
+
+```sql
+CREATE DATABASE workshop;
+```
+
 And create the table below
 
 ```sql
@@ -114,6 +120,7 @@ Click [here](https://regexr.com/3t58q) for regex description.
 ## Analyze the datasets using SQL
 
 In order to increase the read performance we are going to extract the valuable information and insert the results in an optimized table
+
 
 First we create a target table
 
