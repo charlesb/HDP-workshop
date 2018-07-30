@@ -76,7 +76,7 @@ WITH SERDEPROPERTIES (
 Then import the data from HDFS into Hive
 
 ```sql
-LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE workshop.geo_ip_country_whois;
+LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE workshop.geo_ip_country_whois_csv;
 ```
 
 Create an optimized table
