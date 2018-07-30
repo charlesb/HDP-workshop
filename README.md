@@ -189,31 +189,18 @@ FROM workshop.raw_logs
 
 We should have 10k logs!
 
-**Exercise:** Retrieve the origin of the 10 first connections
+**Exercise:** Retrieve the number of connections per origin
+
+*tip:* Limit the connections to 100 as the cluster is a small sandbox
 
 ```sql
-SELECT ip, country_name
+SELECT country_name, count(ip) as connections
 FROM (
-SELECT
-regexp_extract(log, '^(?:([^ ]*),?){1}', 1) ip,
-cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",1) as bigint) * 16777216 +
-cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",2) as bigint) * 65536 +
-cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",3) as bigint) * 256 +
-cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int
-FROM workshop.raw_logs
-LIMIT 10
+SELECT * FROM workshop.web_logs limit 100
 ) accesses, workshop.geo_ip_country_whois
-WHERE ip_to_int between start_ip_int and end_ip_int;
-```
-
-A more efficient way to have the answer
-
-```sql
-SELECT ip, country_name
-FROM (
-SELECT * FROM workshop.web_logs LIMIT 10
-) accesses, workshop.geo_ip_country_whois
-WHERE ip_to_int between start_ip_int and end_ip_int;
+WHERE ip_to_int between start_ip_int and end_ip_int
+GROUP BY country_name
+ORDER BY connections DESC;
 ```
 
 **Exercise:** Explain the query using Ambari UI
