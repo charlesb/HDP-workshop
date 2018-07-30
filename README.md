@@ -127,9 +127,20 @@ request STRING
 STORED AS ORC
 TBLPROPERTIES ("orc.compress"="SNAPPY");
 ```
-We have added a new column ```ip_to_int``` to calculate the [integer representation of an IP](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation). It will be useful later to find out the origin of the connections.
+We have added a new column ```ip_to_int``` to calculate the [integer representation of an IP (v4)](https://dev.maxmind.com/geoip/legacy/csv/#Integer_IPv4_Representation). It will be useful later to find out the origin of the connections.
 
-Nowadays it's more commom to use [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for the ip range representation.
+The formula is:
+
+```
+first byte x 256^3 +
+second byte x 256^2 +
+third byte x 256^1 +
+last byte
+```
+
+As an example, the integer representation of IP 10.0.5.9 is 167773449 (10×256^3 + 0×256^2 + 5×256^1 + 9)
+
+Nowadays it's more commom to use [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) for the IP range representation.
 
 Then extracted raw data and insert and map it to the previous schema.
 
