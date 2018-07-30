@@ -59,7 +59,7 @@ CREATE DATABASE workshop;
 And create the table below
 
 ```sql
-CREATE TABLE worhshop.geo_ip_country_whois (
+CREATE TABLE workshop.geo_ip_country_whois (
 start_ip_address STRING,
 end_ip_address STRING,
 start_ip_int INT,
@@ -76,7 +76,7 @@ WITH SERDEPROPERTIES (
 Then import the data from HDFS into Hive
 
 ```sql
-LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE worhshop.geo_ip_country_whois;
+LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE workshop.geo_ip_country_whois;
 ```
 
 **Exercise:** Explore the table
@@ -88,7 +88,7 @@ SELECT * FROM geo_ip_country_whois;
 Create a table to access the semi-structured logs format
 
 ```sql
-CREATE TABLE worhshop.raw_logs (
+CREATE TABLE workshop.raw_logs (
 log STRING
 );
 ```
@@ -96,13 +96,13 @@ log STRING
 Then laod the data
 
 ```sql
-LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE worhshop.raw_logs;
+LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE workshop.raw_logs;
 ```
 
 **Exercise:** Explore the table
 
 ```sql
-SELECT * FROM worhshop.raw_logs LIMIT 10;
+SELECT * FROM workshop.raw_logs LIMIT 10;
 ```
 
 Here is an example of Apache web server log:
@@ -125,7 +125,7 @@ In order to increase the read performance we are going to extract the valuable i
 First we create a target table
 
 ```sql
-CREATE TABLE worhshop.web_logs (
+CREATE TABLE workshop.web_logs (
 ip VARCHAR(15),
 ip_to_int INT,
 time STRING,
@@ -152,7 +152,7 @@ Nowadays it's more commom to use [CIDR](https://en.wikipedia.org/wiki/Classless_
 Then extracted raw data and insert and map it to the previous schema.
 
 ```sql
-INSERT OVERWRITE TABLE worhshop.web_logs
+INSERT OVERWRITE TABLE workshop.web_logs
 SELECT
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1) ip,
   cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",1) as bigint) * 16777216 +
@@ -161,7 +161,7 @@ SELECT
   cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int,
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 4) time,
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 5) request
-FROM worhshop.raw_logs
+FROM workshop.raw_logs
 ```
 
 **Exercise:** How many logs do we have in the table?
@@ -177,10 +177,10 @@ cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",2) as bigint) * 65536 +
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",3) as bigint) * 256 +
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int
-FROM worhshop.raw_logs
+FROM workshop.raw_logs
 LIMIT 10
 ) accesses
-JOIN worhshop.geo_ip_country_whois
+JOIN workshop.geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
@@ -189,9 +189,9 @@ A more efficient way to have the answer
 ```sql
 SELECT ip, country_name
 FROM (
-SELECT * FROM worhshop.web_logs LIMIT 10
+SELECT * FROM workshop.web_logs LIMIT 10
 ) accesses
-LEFT JOIN worhshop.geo_ip_country_whois
+LEFT JOIN workshop.geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
