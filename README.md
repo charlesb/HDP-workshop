@@ -195,6 +195,13 @@ LEFT JOIN geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
+## TODO
+
+Create a Hive UDF to use CIDR notation instead
+
+https://github.com/maxmind/geoip2-csv-converter
+
+
 
 
 
