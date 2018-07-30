@@ -191,7 +191,7 @@ We should have 10k logs!
 
 **Exercise:** Retrieve the number of connections per origin
 
-*tip:* Limit the connections to 100 as the cluster is a small sandbox
+*tip:* Limit the number of logs to 100 as the cluster is a small sandbox
 
 ```sql
 SELECT country_name, count(ip) as connections
