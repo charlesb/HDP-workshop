@@ -197,6 +197,8 @@ LEFT JOIN workshop.geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
+**Exercise:** Explain the query using Ambari UI
+
 ## TODO
 
 Create a Hive UDF to use CIDR notation instead
