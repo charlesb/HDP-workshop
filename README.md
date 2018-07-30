@@ -59,7 +59,7 @@ CREATE DATABASE workshop;
 And create the table below
 
 ```sql
-CREATE TABLE workshop.geo_ip_country_whois (
+CREATE TABLE workshop.geo_ip_country_whois_csv (
 start_ip_address STRING,
 end_ip_address STRING,
 start_ip_int INT,
@@ -77,6 +77,27 @@ Then import the data from HDFS into Hive
 
 ```sql
 LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE workshop.geo_ip_country_whois;
+```
+
+Create an optimized table
+
+```sql
+CREATE TABLE workshop.geo_ip_country_whois (
+start_ip_address STRING,
+end_ip_address STRING,
+start_ip_int INT,
+end_ip_int INT,
+country_code VARCHAR(2),
+country_name VARCHAR(50)
+)
+STORED AS ORC
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+```
+
+Import the CSV data
+
+```sql
+INSERT INTO workshop.geo_ip_country_whois SELECT * FROM workshop.geo_ip_country_whois_csv;
 ```
 
 **Exercise:** Explore the table
@@ -166,7 +187,7 @@ FROM workshop.raw_logs
 
 **Exercise:** How many logs do we have in the table?
 
-We should have 2,339,309 logs!
+We should have 467,862 logs!
 
 **Exercise:** Retrieve the origin of the 10 first connections
 
@@ -181,8 +202,7 @@ cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)
 cast(regexp_extract(regexp_extract(log, '^(?:([^ ]*),?){1}', 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int
 FROM workshop.raw_logs
 LIMIT 10
-) accesses
-JOIN workshop.geo_ip_country_whois
+) accesses, workshop.geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
@@ -192,8 +212,7 @@ A more efficient way to have the answer
 SELECT ip, country_name
 FROM (
 SELECT * FROM workshop.web_logs LIMIT 10
-) accesses
-LEFT JOIN workshop.geo_ip_country_whois
+) accesses, workshop.geo_ip_country_whois
 WHERE ip_to_int between start_ip_int and end_ip_int;
 ```
 
