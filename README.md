@@ -166,6 +166,8 @@ FROM workshop.raw_logs
 
 **Exercise:** How many logs do we have in the table?
 
+We should have 2,339,309 logs!
+
 **Exercise:** Retrieve the origin of the 10 first connections
 
 ```sql
