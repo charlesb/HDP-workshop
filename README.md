@@ -62,8 +62,8 @@ And create the table below
 CREATE TABLE workshop.geo_ip_country_whois_csv (
 start_ip_address STRING,
 end_ip_address STRING,
-start_ip_int INT,
-end_ip_int INT,
+start_ip_int BIGINT,
+end_ip_int BIGINT,
 country_code VARCHAR(2),
 country_name VARCHAR(50)
 )
@@ -85,8 +85,8 @@ Create an optimized table
 CREATE TABLE workshop.geo_ip_country_whois (
 start_ip_address STRING,
 end_ip_address STRING,
-start_ip_int INT,
-end_ip_int INT,
+start_ip_int BIGINT,
+end_ip_int BIGINT,
 country_code VARCHAR(2),
 country_name VARCHAR(50)
 )
@@ -148,7 +148,7 @@ First we create a target table
 ```sql
 CREATE TABLE workshop.web_logs (
 ip VARCHAR(15),
-ip_to_int INT,
+ip_to_int BIGINT,
 time STRING,
 request STRING
 )
