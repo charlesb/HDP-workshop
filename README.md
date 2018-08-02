@@ -103,7 +103,7 @@ INSERT INTO workshop.geo_ip_country_whois SELECT * FROM workshop.geo_ip_country_
 **Exercise:** Explore the table
 
 ```sql
-SELECT * FROM geo_ip_country_whois;
+SELECT * FROM workshop.geo_ip_country_whois;
 ```
 
 Create a table to access the semi-structured logs format
@@ -114,7 +114,7 @@ log STRING
 );
 ```
 
-Then laod the data
+Then load the data
 
 ```sql
 LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE workshop.raw_logs;
