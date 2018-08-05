@@ -20,7 +20,7 @@ Password: admin
 
 Once logged in, start all services.
 
-It can take up to 6 minutes...
+It can take up to 12 minutes...
 
 ![Image of Amabari Start Services](images/ambari_start_services.png)
 
@@ -36,9 +36,12 @@ Unzip the 2 files and go to Ambari's **Files View**
 
 ![Image of Amabari files view](images/ambari_files_view_1.png)
 
-Then browse to /user/admin and create a new folder workshop.
+Then create these folders:
 
-Unzip GeoIPCountryCSV.zip and WebLogs.zip and upload the content to the new folder.
+* /user/admin/workshop/ip_database
+* /user/admin/workshop/raw_logs
+
+And upload GeoIPCountryWhois.csv and access.log to ip_database and raw_logs respectively
 
 ![Image of Amabari files view 2](images/ambari_files_view_2.png)
 
@@ -59,7 +62,7 @@ CREATE DATABASE workshop;
 And create the table below
 
 ```sql
-CREATE TABLE workshop.geo_ip_country_whois_csv (
+CREATE EXTERNAL TABLE workshop.geo_ip_country_whois_csv (
 start_ip_address STRING,
 end_ip_address STRING,
 start_ip_int BIGINT,
@@ -71,12 +74,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES (
    "separatorChar" = ",",
    "quoteChar"     = "\""
-);
-```
-Then import the data from HDFS into Hive
-
-```sql
-LOAD DATA INPATH '/user/admin/workshop/GeoIPCountryWhois.csv' OVERWRITE INTO TABLE workshop.geo_ip_country_whois_csv;
+)
+LOCATION '/user/admin/workshop/ip_database';
 ```
 
 Create an optimized table
@@ -100,31 +99,18 @@ Import the CSV data
 INSERT INTO workshop.geo_ip_country_whois SELECT * FROM workshop.geo_ip_country_whois_csv;
 ```
 
-**Exercise:** Explore the table
-
-```sql
-SELECT * FROM workshop.geo_ip_country_whois;
-```
+**Question:** What are the IP ranges for Singapore?
 
 Create a table to access the semi-structured logs format
 
 ```sql
-CREATE TABLE workshop.raw_logs (
+CREATE EXTERNAL TABLE workshop.raw_logs (
 log STRING
-);
-```
-
-Then load the data
-
-```sql
-LOAD DATA INPATH '/user/admin/workshop/access.log' OVERWRITE INTO TABLE workshop.raw_logs;
+)STORED AS TEXTFILE
+LOCATION '/user/admin/workshop/raw_logs';
 ```
 
 **Exercise:** Explore the table
-
-```sql
-SELECT * FROM workshop.raw_logs LIMIT 10;
-```
 
 Here is an example of Apache web server log:
 
@@ -149,7 +135,7 @@ First we create a target table
 CREATE TABLE workshop.web_logs (
 ip VARCHAR(15),
 ip_to_int BIGINT,
-time STRING,
+`time` STRING,
 request STRING
 )
 STORED AS ORC
@@ -180,12 +166,12 @@ SELECT
   cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",2) as bigint) * 65536 +
   cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",3) as bigint) * 256 +
   cast(regexp_extract(regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 1),"(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)",4) as bigint) as ip_to_int,
-  regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 4) time,
+  regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 4) `time`,
   regexp_extract(log, "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?", 5) request
 FROM workshop.raw_logs
 ```
 
-**Exercise:** How many logs do we have in the table?
+**Questions:** How many logs do we have in the table?
 
 We should have 10k logs!
 
@@ -197,8 +183,9 @@ We should have 10k logs!
 SELECT country_name, count(ip) as connections
 FROM (
 SELECT * FROM workshop.web_logs limit 100
-) accesses, workshop.geo_ip_country_whois
-WHERE ip_to_int between start_ip_int and end_ip_int
+) accesses
+JOIN workshop.geo_ip_country_whois
+ON ip_to_int between start_ip_int and end_ip_int
 GROUP BY country_name
 ORDER BY connections DESC;
 ```
