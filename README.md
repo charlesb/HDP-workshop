@@ -16,13 +16,33 @@ Open a web browser and go to the following url
 Username: admin
 Password: admin
 
-![Image of Amabari Login Page](images/ambari_login_page.png)
+![Image of Ambari Login Page](images/ambari_login_page.png)
 
 Once logged in, start all services.
 
 It can take up to 12 minutes...
 
-![Image of Amabari Start Services](images/ambari_start_services.png)
+![Image of Ambari Start Services](images/ambari_start_services.png)
+
+# SSH to the sandbox
+
+Add a new line to your **hosts** file such as
+
+```11.11.11.11	demo.hortonworks.com```
+
+Then download either the [ppk](keys/hdp-workshop.ppk) or [pem](keys/hdp-workshop.pem) private key whether you are using Windows or Mac
+
+On Mac use the terminal to SSH
+
+For Mac users, don't forget to ```chmod 400 /path/to/hdp-worshop.ppk``` before ssh'ing
+
+![Image of Mac terminal ssh](images/mac_terminal_ssh.png)
+
+On Windows use [putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+
+![Image of Putty ssh](images/login_with_putty_1.png)
+
+![Image of Putty ssh](images/login_with_putty_2.png)
 
 ## Load the sample datasets to HDFS
 
@@ -34,7 +54,7 @@ Different formats can also be [downloaded](http://geolite.maxmind.com/download/g
 
 Unzip the 2 files and go to Ambari's **Files View**
 
-![Image of Amabari files view](images/ambari_files_view_1.png)
+![Image of Ambari files view](images/ambari_files_view_1.png)
 
 Then create these folders:
 
@@ -43,7 +63,7 @@ Then create these folders:
 
 And upload GeoIPCountryWhois.csv and access.log to ip_database and raw_logs respectively
 
-![Image of Amabari files view 2](images/ambari_files_view_2.png)
+![Image of Ambari files view 2](images/ambari_files_view_2.png)
 
 **Exercise:** Explore the content on both files on HDFS
 
@@ -51,7 +71,7 @@ And upload GeoIPCountryWhois.csv and access.log to ip_database and raw_logs resp
 
 Go to Ambaris's **Hive View 2.0**
 
-![Image of Amabari hive view](images/ambari_hive_view.png)
+![Image of Ambari hive view](images/ambari_hive_view.png)
 
 First create a new database
 
@@ -198,6 +218,15 @@ Create a Hive UDF to use CIDR notation instead
 
 https://github.com/maxmind/geoip2-csv-converter
 
+## NiFi and Hive Streaming
+
+```bash
+su - admin
+cd nifi-1.5.0.3.1.2.0-7
+./bin/nifi.sh start
+```
+
+Then visit http://demo.hortonworks.com:8079/nifi
 
 
 
