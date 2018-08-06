@@ -205,7 +205,7 @@ FROM (
 SELECT * FROM workshop.web_logs limit 100
 ) accesses
 JOIN workshop.geo_ip_country_whois
-ON ip_to_int between start_ip_int and end_ip_int
+WHERE ip_to_int between start_ip_int and end_ip_int
 GROUP BY country_name
 ORDER BY connections DESC;
 ```
